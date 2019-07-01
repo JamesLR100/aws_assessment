@@ -1,0 +1,122 @@
+AWS, Git, Linux 
+Assessment Plan for Collabra
+Prepared by beCloudReady
+
+OVERVIEW & PURPOSE
+Assessment readiness for AWS, Git and Linux skills
+
+Short Answer
+
+1.	Highlight few differences between Block storage ( EBS ) & Object storage (s3)
+
+Answer:
+EBS involves installing an operating system by attaching an EBS volume to an EC2 instance, while S3 is a form of online storage
+with bucket organization that does not involve an OS installation to access it. While both are fast, EBS is faster. EBS has redundancy
+across multiple servers in an Availability Zone with a specified storage size associated with either magnetic or SSD disk drives that
+determine pricing of resources, while S3 has a larger scale redundancy across multiple facilities in a Region and does not have a 
+dependency on specified types of disk drives in its allocation of resources.
+
+2.	Highlight few differences between NoSQL & SQL databases
+
+Answer:
+SQL (Structured Query Language) applies to relational databases comprised of tables with columns and rows (with each row having a unique key),
+while NoSQL can be applied to nonrelational databases with alternative forms of structure. Relational databases have a stricter adherence to 
+ACID (Atomicity, Consistency, Isolation, Durability) to prevent errors and mishandling, while nonrelational databases will often compromise 
+factors of ACID to favor availability and speed. While relational databases are quite useful under highly regulated conditions where high data 
+integrity is a must, nonrelational databases are very useful in dynamic contexts with files like JSONs and XMLs that are regularly used in 
+transmissions of information over the internet that tend to be rapid and variable.
+
+3.	Highlight few differences between ssh & http protocol
+
+Answer:
+HTTP (Hypertext Transfer Protocol) is a request-response protocol that serves as the foundation of communication over the world wide web. 
+SSH (Secure Shell) offers a secure channel over unsecured networks through encryption by public-key cryptography. While SSH offers encryption 
+for security, HTTP does not have encryption and is vulnerable to attacks. In response to this vulnerability, HTTPS (Hypertext Transfer Protocol Secure) 
+has been implemented with greater regularity in recent years. For cloud computing, SSH is especially useful for securing access to a virtual machine. 
+In the context of this course, we used private keys to establish a secure connection though SSH with EC2 instances in Linux shell.
+
+Tasks 1
+
+1.	Create a new ec2 instance & new key ( AWS Ohio region )
+
+Instance id: i-0e91c23f5b9b36995
+Key Name: collabera-ohio
+
+Task 2
+
+1.	Create a S3 bucket with <yourname>_final ( Ohio region )
+
+Bucket name: jamesrichardsonfinal
+
+2.	Create 2 IAM users, one with readonly s3 access, another with s3fullaccess
+
+jlr has AmazonS3FullAccess and jlr2 has AmazonS3ReadOnly Access. 
+
+Task 3:
+
+1.	Upload the file https://github.com/becloudready/rds-headtutorials/blob/master/mysql/mysqlsampledatabase.sql into your s3 bucket
+2.	Download the aforesaid uploaded ( mysqlsampledatabase.sql ) into your ec2 instance ( cmdline )
+3.	Write the command that you used for step #2
+
+#CODE (Here I apply the code from Postman and save to the file using > at the end.)
+curl -X GET \
+  https://jamesrichardsonfinal.s3.us-east-2.amazonaws.com/mysqlsampledatabase.sql \
+  -H 'Accept: */*' \
+  -H 'Cache-Control: no-cache' \
+  -H 'Connection: keep-alive' \
+  -H 'Host: jamesrichardsonfinal.s3.us-east-2.amazonaws.com' \
+  -H 'Postman-Token: bf6dcf75-421b-4e45-9a4d-d696f0bc7a8b,bcccb94e-05af-4af3-a91d-ea8d852b69c2' \
+  -H 'User-Agent: PostmanRuntime/7.15.0' \
+  -H 'accept-encoding: gzip, deflate' \
+  -H 'cache-control: no-cache' > mysqlsampledatabase.sql
+
+Task 4:
+
+1.	On ec2 instance Count number of lines of the mysqldump file ( downloaded from s3)
+
+#CODE – I used pipe with a command to count lines from the contents of the file.
+
+cat mysqlsampledatabase.sql | wc -l 
+
+#RESULT: 7930
+
+2.	Create a new file from the file mysqlsampledatabase.sql where every word “mysql” is replaced with “yoursql” 
+
+#CODE – Here I used sed to globally substitute instances of “mysql” with “yoursql” and saved it 
+#to the file yoursqlsampledatabase.sql.
+
+sed 's/mysql/yoursql/g' mysqlsampledatabase.sql > yoursqlsampledatabase.sql
+
+3.	( bonus ) Count how many times word NULL appeared on mysqlsampledatabase.sql file.
+
+#CODE – I used -o to find only matches of NULL and applied a word count (wc -w) with a pipe. 
+#Note: wc -l also yields the same result since each match is listed on a separate line before the pipe is applied.
+
+grep -o NULL  mysqlsampledatabase.sql | wc -w
+
+#RESULT: 538
+
+Task 5:
+
+1.	Create an RDS MariaDB instance on AWS Ohio region.
+
+Instance name: james-richardson-final-db
+
+2.	Import the mysql dump file mysqlsampledatabase.sql into the RDS database
+
+Task 6:
+
+1.	Write an SQL query on the database created on step 5 : Select all customer names, and product names from the database in single query.
+
+--All customer names with any corresponding product names over all orders:
+
+select c.customerName, p.productName
+from customers c
+left join orders o on c.customerNumber = o.customerNumber
+left join orderdetails od on o.orderNumber = od.orderNumber
+left join products p on od.productCode = p.productCode;
+
+Task 7:
+
+1.	Push your each answer as separate git commit into a new repository called aws_assessment. ( Don’t put any AWS keys, secret, passwords into the commit, of delete the keys before you push them )
+
